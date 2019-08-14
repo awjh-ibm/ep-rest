@@ -8,3 +8,7 @@
  */
 
 rootProject.name = 'eprest'
+
+include ':modules:common'
+include ':modules:ledger-api'
+include ':modules:assets'

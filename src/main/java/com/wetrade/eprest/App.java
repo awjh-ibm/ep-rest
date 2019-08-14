@@ -3,12 +3,110 @@
  */
 package com.wetrade.eprest;
 
-public class App {
-    public String getGreeting() {
-        return "Hello world.";
-    }
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collection;
 
+import com.google.gson.Gson;
+import com.wetrade.assets.PurchaseOrder;
+import com.wetrade.common.FabricProxyConfig;
+import com.wetrade.common.FabricProxyException;
+
+import org.json.JSONObject;
+
+import spark.QueryParamsMap;
+import spark.Spark;
+
+public class App {
     public static void main(String[] args) {
-        System.out.println(new App().getGreeting());
+        PurchaseOrderService service;
+        try {
+            Path walletPath = Paths.get("/Users/liamg/dev/WeTradePOC/eprest/src/main/resources/wallet");
+            Path connectionProfilePath = Paths.get("/Users/liamg/dev/WeTradePOC/eprest/src/main/resources/local_fabric_connection.json");
+            String channelName = "mychannel";
+            String contractName = "contract";
+            String org = "Org1";
+            FabricProxyConfig config = new FabricProxyConfig(walletPath, connectionProfilePath, channelName, contractName, org);
+            service = new PurchaseOrderServiceFabricImpl(config);
+        } catch (FabricProxyException exception) {
+            exception.printStackTrace();
+            System.exit(1);
+            return;
+        }
+
+        Gson gson = new Gson();
+
+        Spark.get("/api/purchaseorders", (req, res) -> {
+            res.type("application/json");
+
+            BaseResponse response;
+            Collection<PurchaseOrder> purchaseOrders;
+            try {
+                purchaseOrders = (Collection<PurchaseOrder>) service.getPurchaseOrders();
+                response = new BaseResponse(ResponseStatus.SUCCESS, gson.toJsonTree(purchaseOrders));
+            } catch (FabricProxyException exception) {
+                response = new BaseResponse(ResponseStatus.ERROR);
+            }
+            return gson.toJson(response);
+        });
+
+        Spark.get("/api/purchaseorders/:id", (req, res) -> {
+            res.type("application/json");
+            String id = req.params(":id");
+
+            PurchaseOrder purchaseOrder = service.getPurchaseOrder(id);
+
+            BaseResponse response;
+            if (purchaseOrder == null) {
+                response = new BaseResponse(ResponseStatus.ERROR, "Purchase Order not found with ID: " + id);
+            } else {
+                response = new BaseResponse(ResponseStatus.SUCCESS, gson.toJsonTree(purchaseOrder));
+            }
+            return gson.toJson(response);
+        });
+
+        Spark.post("/api/purchaseorders", (req, res) -> {
+            res.type("application/json");
+            String body = res.body();
+
+            BaseResponse response;
+            JSONObject purchaseOrderJson = new JSONObject(body);
+            try {
+                PurchaseOrder purchaseOrder = service.createPurchaseOrder(purchaseOrderJson);
+                response = new BaseResponse(ResponseStatus.SUCCESS, gson.toJsonTree(purchaseOrder));
+            } catch (FabricProxyException exception) {
+                response = new BaseResponse(ResponseStatus.ERROR);
+            }
+            return gson.toJson(response);
+        });
+
+        Spark.post("api/purchaseorders/:id/accept", (req, res) -> {
+            res.type("application/json");
+            String purchaseOrderId = req.params(":id");
+
+            BaseResponse response;
+            try {
+                service.acceptPurchaseOrder(purchaseOrderId);
+                response = new BaseResponse(ResponseStatus.SUCCESS);
+            } catch (FabricProxyException exception) {
+                response = new BaseResponse(ResponseStatus.ERROR);
+            }
+            return gson.toJson(response);
+        });
+
+        Spark.post("api/purchaseorders/:id/close", (req, res) -> {
+            res.type("application/json");
+            String purchaseOrderId = req.params(":id");
+
+            BaseResponse response;
+            try {
+                service.closePurchaseOrder(purchaseOrderId);
+                response = new BaseResponse(ResponseStatus.SUCCESS);
+            } catch (FabricProxyException exception) {
+                response = new BaseResponse(ResponseStatus.ERROR);
+            }
+            return gson.toJson(response);
+        });
     }
 }
