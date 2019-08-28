@@ -1,0 +1,35 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Debug (Launch) - Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "Debug (Launch)-ProxyEventListener<common>",
+            "request": "launch",
+            "mainClass": "listener.ProxyEventListener",
+            "projectName": "common"
+        },
+        {
+            "type": "java",
+            "name": "Debug (Launch)-ProxyTestHarness<common>",
+            "request": "launch",
+            "mainClass": "test.ProxyTestHarness",
+            "projectName": "common"
+        },
+        {
+            "type": "java",
+            "name": "Debug (Launch)-App<eprest>",
+            "request": "launch",
+            "mainClass": "com.wetrade.eprest.App",
+            "projectName": "eprest"
+        }
+    ]
+}

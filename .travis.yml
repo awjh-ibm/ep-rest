@@ -1,5 +1,5 @@
 language: java
 jdk:
-- openjdk8
-  only:
-  - master
+    - openjdk8
+only:
+    - master
