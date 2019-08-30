@@ -1,12 +1,12 @@
 package com.wetrade.eprest;
 
-import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Collection;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.wetrade.assets.FinanceRequest;
+import com.wetrade.assets.FinanceRequestGroup;
 import com.wetrade.common.FabricProxy;
 import com.wetrade.common.FabricProxyConfig;
 import com.wetrade.common.FabricProxyException;
@@ -18,9 +18,11 @@ public class FinanceRequestServiceFabricImpl implements FinanceRequestService {
     private FabricProxy proxy;
     String format = "EEE MMM d HH:mm:ss Z yyy";
     private Gson gson = new GsonBuilder().setDateFormat(format).create();
+    private String identity;
 
-    public FinanceRequestServiceFabricImpl(FabricProxyConfig config) throws FabricProxyException {
+    public FinanceRequestServiceFabricImpl(FabricProxyConfig config, String identity) throws FabricProxyException {
         this.proxy = new FabricProxy(config);
+        this.identity = identity;
     }
 
     @Override
@@ -29,12 +31,7 @@ public class FinanceRequestServiceFabricImpl implements FinanceRequestService {
     }
 
     @Override
-    public void approveFinanceRequest(String id) throws Exception {
-        this.proxy.submitTransaction("admin", subContractName, "approveFinanceRequest");
-    }
-
-    @Override
-    public FinanceRequest[] createFinanceRequest(JSONObject financeRequest) throws Exception {
+    public FinanceRequestGroup createFinanceRequest(JSONObject financeRequest) throws FabricProxyException {
         String requesterId = financeRequest.getString("requesterId");
         String financierIds = financeRequest.getJSONArray("financierIds").toString();
         String purchaseOrderId = financeRequest.getString("purchaseOrderId");
@@ -45,11 +42,11 @@ public class FinanceRequestServiceFabricImpl implements FinanceRequestService {
         String fcn = "createFinanceRequest";
         String response = this.proxy.submitTransaction("admin", subContractName, fcn, requesterId, financierIds, purchaseOrderId, amount, interest, monthLength);
 
-        return gson.fromJson(response, FinanceRequest[].class);
+        return gson.fromJson(response, FinanceRequestGroup.class);
     }
 
     @Override
-    public FinanceRequest getFinanceRequest(String id) throws Exception {
+    public FinanceRequest getFinanceRequest(String id) throws FabricProxyException {
         String fcn = "getFinanceRequest";
         String response = this.proxy.evaluateTransaction("admin", subContractName, fcn, new String[]{id});
 
@@ -58,22 +55,24 @@ public class FinanceRequestServiceFabricImpl implements FinanceRequestService {
     }
 
     @Override
-    public FinanceRequest getFinanceRequestByHash(String hash) throws Exception {
+    public FinanceRequest getFinanceRequestByHash(String hash) throws FabricProxyException {
         return null;
     }
 
     @Override
-    public Collection<FinanceRequest> getFinanceRequests(String behalfOfId) throws Exception {
+    public Collection<FinanceRequest> getFinanceRequests(String behalfOfId) throws FabricProxyException {
         String fcn = "getFinanceRequests";
-        String response = this.proxy.evaluateTransaction("admin", subContractName, fcn);
+        String response = this.proxy.evaluateTransaction(identity, subContractName, fcn, new String[]{behalfOfId});
 
         FinanceRequest[] requests = gson.fromJson(response, FinanceRequest[].class);
         return Arrays.asList(requests);
     }
 
     @Override
-    public void rejectFinanceRequest(String id) throws Exception {
-
+    public Collection<FinanceRequest> getFinanceRequestsByGroupHash(String hash) throws FabricProxyException {
+        String fcn = "getFinanceRequestsByGroupHash";
+        String response = this.proxy.evaluateTransaction(identity, subContractName, fcn, new String[]{hash});
+        FinanceRequest[] requests = gson.fromJson(response, FinanceRequest[].class);
+        return Arrays.asList(requests);
     }
-
 }

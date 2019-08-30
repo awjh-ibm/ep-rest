@@ -5,9 +5,9 @@ import java.util.Collection;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.wetrade.eprest.BaseResponse;
+import com.wetrade.utils.BaseResponse;
 import com.wetrade.eprest.PurchaseOrderService;
-import com.wetrade.eprest.ResponseStatus;
+import com.wetrade.utils.ResponseStatus;
 
 import org.json.JSONObject;
 
@@ -23,11 +23,13 @@ public class PurchaseOrderController {
 
         Spark.get("/api/purchaseorders", (req, res) -> {
             res.type("application/json");
+            String user = new JSONObject(req.body()).getString("user");
+
 
             BaseResponse response;
             Collection<PurchaseOrder> purchaseOrders;
             try {
-                purchaseOrders = (Collection<PurchaseOrder>) service.getPurchaseOrders("andy");
+                purchaseOrders = (Collection<PurchaseOrder>) service.getPurchaseOrders(user);
                 response = new BaseResponse(ResponseStatus.SUCCESS, gson.toJsonTree(purchaseOrders));
             } catch (FabricProxyException exception) {
                 response = new BaseResponse(ResponseStatus.ERROR, gson.toJsonTree(exception));
@@ -38,6 +40,7 @@ public class PurchaseOrderController {
         Spark.get("/api/purchaseorders/:id", (req, res) -> {
             res.type("application/json");
             String id = req.params(":id");
+            String user = new JSONObject(req.body()).getString("user");
 
             PurchaseOrder purchaseOrder = service.getPurchaseOrder(id);
 
@@ -53,6 +56,7 @@ public class PurchaseOrderController {
         Spark.get("/api/purchaseorders/hash/:hash", (req, res) -> {
             res.type("application/json");
             String hash = req.params(":hash");
+            String user = new JSONObject(req.body()).getString("user");
 
             PurchaseOrder purchaseOrder = service.getPurchaseOrderByHash(hash);
 
@@ -71,6 +75,8 @@ public class PurchaseOrderController {
 
             BaseResponse response;
             JSONObject purchaseOrderJson = new JSONObject(body);
+            String user = purchaseOrderJson.getString("user");
+            purchaseOrderJson.remove("user");
             try {
                 PurchaseOrder purchaseOrder = service.createPurchaseOrder(purchaseOrderJson);
                 response = new BaseResponse(ResponseStatus.SUCCESS, gson.toJsonTree(purchaseOrder));
@@ -84,6 +90,7 @@ public class PurchaseOrderController {
         Spark.put("api/purchaseorders/:id/accept", (req, res) -> {
             res.type("application/json");
             String purchaseOrderId = req.params(":id");
+            String user = new JSONObject(req.body()).getString("user");
 
             BaseResponse response;
             try {
@@ -98,6 +105,7 @@ public class PurchaseOrderController {
         Spark.put("api/purchaseorders/:id/close", (req, res) -> {
             res.type("application/json");
             String purchaseOrderId = req.params(":id");
+            String user = new JSONObject(req.body()).getString("user");
 
             BaseResponse response;
             try {

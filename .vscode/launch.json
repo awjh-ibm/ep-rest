@@ -29,7 +29,20 @@
             "name": "Debug (Launch)-App<eprest>",
             "request": "launch",
             "mainClass": "com.wetrade.eprest.App",
-            "projectName": "eprest"
+            "projectName": "eprest",
+            "console": "internalConsole",
+            "args": [
+                "-w",
+                "/Users/liamg/dev/WeTradePOC/eprest/src/main/resources/wallet",
+                "-c",
+                "/Users/liamg/dev/WeTradePOC/eprest/src/main/resources/local_fabric_connection.json",
+                "-o",
+                "Org1MSP",
+                "-i",
+                "AmsterdamBank",
+                "-p",
+                "7000"
+            ]
         }
     ]
 }

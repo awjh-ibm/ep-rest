@@ -7,8 +7,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.wetrade.assets.Shipment;
 import com.wetrade.common.FabricProxyException;
-import com.wetrade.eprest.BaseResponse;
-import com.wetrade.eprest.ResponseStatus;
+import com.wetrade.utils.BaseResponse;
+import com.wetrade.utils.ResponseStatus;
 import com.wetrade.eprest.ShipmentService;
 
 import org.json.JSONObject;
@@ -24,9 +24,10 @@ public class ShipmentController {
         Spark.get("/api/shipments", (req, res) -> {
             BaseResponse response;
             Collection<Shipment> shipments;
+            String user = new JSONObject(req.body()).getString("user");
 
             try {
-                shipments = (Collection<Shipment>) service.getShipments("andy");
+                shipments = (Collection<Shipment>) service.getShipments(user);
                 response = new BaseResponse(ResponseStatus.SUCCESS, gson.toJsonTree(shipments));
             } catch (FabricProxyException exception) {
                 response = new BaseResponse(ResponseStatus.ERROR, gson.toJsonTree(exception));
@@ -37,6 +38,7 @@ public class ShipmentController {
         Spark.get("/api/shipments/:id", (req, res) -> {
             res.type("application/json");
             String id = req.params(":id");
+            String user = new JSONObject(req.body()).getString("user");
 
             Shipment shipment = service.getShipment(id);
 
@@ -52,6 +54,7 @@ public class ShipmentController {
         Spark.get("/api/shipments/hash/:hash", (req, res) -> {
             res.type("application/json");
             String hash = req.params(":hash");
+            String user = new JSONObject(req.body()).getString("user");
 
             Shipment shipment = service.getShipmentByHash(hash);
             BaseResponse response;
@@ -66,6 +69,7 @@ public class ShipmentController {
         Spark.post("/api/shipments", (req, res) -> {
             res.type("application/json");
             String body = req.body();
+            String user = new JSONObject(req.body()).getString("user");
 
             BaseResponse response;
             JSONObject shipmentJson = new JSONObject(body);
@@ -82,6 +86,7 @@ public class ShipmentController {
         Spark.put("/api/shipment/:id/deliver", (req, res) -> {
             res.type("application/json");
             String shipmentId = req.params(":id");
+            String user = new JSONObject(req.body()).getString("user");
 
             BaseResponse response;
             try {

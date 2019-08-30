@@ -14,9 +14,11 @@ import org.json.JSONObject;
 public class ShipmentServiceFabricImpl implements ShipmentService {
     private String subContractName = "ShipmentContract";
     private FabricProxy proxy;
+    private String identity;
 
-    public ShipmentServiceFabricImpl(FabricProxyConfig config) throws FabricProxyException {
+    public ShipmentServiceFabricImpl(FabricProxyConfig config, String identity) throws FabricProxyException {
         this.proxy = new FabricProxy(config);
+        this.identity = identity;
     }
 
     @Override
@@ -28,7 +30,7 @@ public class ShipmentServiceFabricImpl implements ShipmentService {
 
         Gson gson = new Gson();
         String fcn = "createShipment";
-        String response = this.proxy.submitTransaction("admin", subContractName, fcn, purchaseOrderId, units, senderId, reveiverId);
+        String response = this.proxy.submitTransaction(identity, subContractName, fcn, purchaseOrderId, units, senderId, reveiverId);
         Shipment newShipment = gson.fromJson(response, Shipment.class);
         return newShipment;
     }
@@ -36,14 +38,14 @@ public class ShipmentServiceFabricImpl implements ShipmentService {
     @Override
     public void deliverShipment(String id) throws FabricProxyException {
         String fcn = "deliveredShipment";
-        this.proxy.evaluateTransaction("admin", subContractName, fcn, id);
+        this.proxy.evaluateTransaction(identity, subContractName, fcn, id);
     }
 
     @Override
     public Shipment getShipment(String id) throws FabricProxyException {
         Gson gson = new Gson();
         String fcn = "getShipment";
-        String response = this.proxy.evaluateTransaction("admin", subContractName, fcn, id);
+        String response = this.proxy.evaluateTransaction(identity, subContractName, fcn, id);
         Shipment shipment = gson.fromJson(response, Shipment.class);
         return shipment;
     }
@@ -52,7 +54,7 @@ public class ShipmentServiceFabricImpl implements ShipmentService {
     public Shipment getShipmentByHash(String hash) throws FabricProxyException {
         Gson gson = new Gson();
         String fcn = "getShipmentByHash";
-        String response = this.proxy.evaluateTransaction("admin", subContractName, fcn, hash);
+        String response = this.proxy.evaluateTransaction(identity, subContractName, fcn, hash);
         Shipment shipment = gson.fromJson(response, Shipment.class);
         return shipment;
     }
@@ -61,7 +63,7 @@ public class ShipmentServiceFabricImpl implements ShipmentService {
     public Collection<Shipment> getShipments(String behalfOfId) throws FabricProxyException {
         Gson gson = new Gson();
         String fcn = "getShipments";
-        String response = this.proxy.evaluateTransaction("admin", subContractName, fcn, behalfOfId);
+        String response = this.proxy.evaluateTransaction(identity, subContractName, fcn, behalfOfId);
         Shipment[] shipments = gson.fromJson(response, Shipment[].class);
         return Arrays.asList(shipments);
     }

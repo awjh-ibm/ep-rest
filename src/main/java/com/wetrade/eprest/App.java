@@ -12,33 +12,73 @@ import com.wetrade.common.FabricProxyException;
 import com.wetrade.eprest.controllers.FinanceRequestController;
 import com.wetrade.eprest.controllers.PurchaseOrderController;
 import com.wetrade.eprest.controllers.ShipmentController;
+import com.wetrade.utils.BaseResponse;
+import com.wetrade.utils.ResponseStatus;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 
 import spark.Spark;
 
 public class App {
     public static void main(String[] args) {
+        String identity = "";
+
+        Options options = new Options();
+
+        options.addRequiredOption("w", "wallet", true, "path to wallet");
+        options.addRequiredOption("c", "connectionProfile", true, "path to connection profile");
+        options.addRequiredOption("o", "org", true, "organisation ID");
+        options.addRequiredOption("i", "identity", true, "Identity");
+        options.addRequiredOption("p", "port", true, "API Port");
+
+        CommandLineParser clp = new DefaultParser();
+        CommandLine cmd = null;
+
+
+        try {
+            cmd = clp.parse(options, args);
+        } catch (ParseException e) {
+            System.err.println("Failed to start SP REST. " + e.getMessage());
+            System.exit(1);
+        }
+        identity = cmd.getOptionValue("i");
+        Spark.port(Integer.parseInt(cmd.getOptionValue("p")));
+
+        Path walletPath = Paths.get(cmd.getOptionValue("w"));
+        Path connectionProfilePath = Paths.get(cmd.getOptionValue("c"));
+
         PurchaseOrderService purchaseOrderService;
         FinanceRequestService financeRequestService;
         ShipmentService shipmentService;
         try {
-            Path walletPath = Paths.get("/Users/liamg/dev/WeTradePOC/eprest/src/main/resources/wallet");
-            Path connectionProfilePath = Paths.get("/Users/liamg/dev/WeTradePOC/eprest/src/main/resources/local_fabric_connection.json");
             String channelName = "mychannel";
             String contractName = "contract";
-            String org = "Org1";
+            String org = cmd.getOptionValue("o");
+
             FabricProxyConfig config = new FabricProxyConfig(walletPath, connectionProfilePath, channelName, contractName, org);
-            purchaseOrderService = new PurchaseOrderServiceFabricImpl(config);
-            financeRequestService = new FinanceRequestServiceFabricImpl(config);
-            shipmentService = new ShipmentServiceFabricImpl(config);
+            purchaseOrderService = new PurchaseOrderServiceFabricImpl(config, identity);
+            financeRequestService = new FinanceRequestServiceFabricImpl(config, identity);
+            shipmentService = new ShipmentServiceFabricImpl(config, identity);
         } catch (FabricProxyException exception) {
             exception.printStackTrace();
             System.exit(1);
             return;
         }
 
+
         new PurchaseOrderController(purchaseOrderService);
         new FinanceRequestController(financeRequestService);
         new ShipmentController(shipmentService);
+
+        Spark.notFound((req, res) -> {
+            res.type("application/json");
+            Gson gson = new Gson();
+            return gson.toJson(new BaseResponse(ResponseStatus.ERROR, "Not Found"));
+        });
 
         Spark.internalServerError((req, res) -> {
             res.type("application/json");
