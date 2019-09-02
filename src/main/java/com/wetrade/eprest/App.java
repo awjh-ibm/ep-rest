@@ -34,6 +34,7 @@ public class App {
         options.addRequiredOption("o", "org", true, "organisation ID");
         options.addRequiredOption("i", "identity", true, "Identity");
         options.addRequiredOption("p", "port", true, "API Port");
+        options.addRequiredOption("j", "peer", true, "Peer name");
 
         CommandLineParser clp = new DefaultParser();
         CommandLine cmd = null;
@@ -55,13 +56,14 @@ public class App {
         FinanceRequestService financeRequestService;
         ShipmentService shipmentService;
         try {
-            String channelName = "mychannel";
+            String channelName = "tradenet";
             String contractName = "contract";
             String org = cmd.getOptionValue("o");
+            String targetPeer = cmd.getOptionValue("j");
 
             FabricProxyConfig config = new FabricProxyConfig(walletPath, connectionProfilePath, channelName, contractName, org);
             purchaseOrderService = new PurchaseOrderServiceFabricImpl(config, identity);
-            financeRequestService = new FinanceRequestServiceFabricImpl(config, identity);
+            financeRequestService = new FinanceRequestServiceFabricImpl(config, identity, targetPeer);
             shipmentService = new ShipmentServiceFabricImpl(config, identity);
         } catch (FabricProxyException exception) {
             exception.printStackTrace();

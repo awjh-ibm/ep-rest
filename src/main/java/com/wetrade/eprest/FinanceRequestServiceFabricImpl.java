@@ -19,10 +19,12 @@ public class FinanceRequestServiceFabricImpl implements FinanceRequestService {
     String format = "EEE MMM d HH:mm:ss Z yyy";
     private Gson gson = new GsonBuilder().setDateFormat(format).create();
     private String identity;
+    private String targetPeer;
 
-    public FinanceRequestServiceFabricImpl(FabricProxyConfig config, String identity) throws FabricProxyException {
+    public FinanceRequestServiceFabricImpl(FabricProxyConfig config, String identity, String targetPeer) throws FabricProxyException {
         this.proxy = new FabricProxy(config);
         this.identity = identity;
+        this.targetPeer = targetPeer;
     }
 
     @Override
@@ -40,7 +42,7 @@ public class FinanceRequestServiceFabricImpl implements FinanceRequestService {
         String monthLength = Integer.toString(financeRequest.getInt("monthLength"));
 
         String fcn = "createFinanceRequest";
-        String response = this.proxy.submitTransaction("admin", subContractName, fcn, requesterId, financierIds, purchaseOrderId, amount, interest, monthLength);
+        String response = this.proxy.submitTransaction(new String[] {this.targetPeer}, this.identity, subContractName, fcn, requesterId, financierIds, purchaseOrderId, amount, interest, monthLength);
 
         return gson.fromJson(response, FinanceRequestGroup.class);
     }
@@ -48,7 +50,7 @@ public class FinanceRequestServiceFabricImpl implements FinanceRequestService {
     @Override
     public FinanceRequest getFinanceRequest(String id) throws FabricProxyException {
         String fcn = "getFinanceRequest";
-        String response = this.proxy.evaluateTransaction("admin", subContractName, fcn, new String[]{id});
+        String response = this.proxy.evaluateTransaction(this.identity, subContractName, fcn, new String[]{id});
 
         FinanceRequest request = gson.fromJson(response, FinanceRequest.class);
         return request;
