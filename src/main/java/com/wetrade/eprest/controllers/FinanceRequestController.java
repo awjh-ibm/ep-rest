@@ -74,11 +74,15 @@ public class FinanceRequestController {
             res.type("application/json");
             String hash = req.params(":hash");
             String user = new JSONObject(req.body()).getString("user");
-
-            Collection<FinanceRequest> requests = service.getFinanceRequestsByGroupHash(hash);
-
             BaseResponse response;
-            response = new BaseResponse(ResponseStatus.SUCCESS, gson.toJsonTree(requests));
+
+            try {
+                Collection<FinanceRequest> requests = service.getFinanceRequestsByGroupHash(hash);
+                response = new BaseResponse(ResponseStatus.SUCCESS, gson.toJsonTree(requests));
+            } catch (FabricProxyException ex) {
+                response = new BaseResponse(ResponseStatus.ERROR, gson.toJsonTree(ex));
+            }
+
             return gson.toJson(response);
         });
 
@@ -93,6 +97,36 @@ public class FinanceRequestController {
             try {
                 FinanceRequestGroup financeRequestGroup = service.createFinanceRequest(financeRequestJSon);
                 response = new BaseResponse(ResponseStatus.SUCCESS, gson.toJsonTree(financeRequestGroup));
+            } catch (FabricProxyException exception) {
+                exception.printStackTrace();
+                response = new BaseResponse(ResponseStatus.ERROR, gson.toJsonTree(exception));
+            }
+            return gson.toJson(response);
+        });
+
+        Spark.put("/api/financerequests/:requestId/accept", (req, res) -> {
+            res.type("application/json");
+            String requestId = req.params(":requestId");
+
+            BaseResponse response;
+            try {
+                service.acceptFinanceRequest(requestId);
+                response = new BaseResponse(ResponseStatus.SUCCESS);
+            } catch (FabricProxyException exception) {
+                exception.printStackTrace();
+                response = new BaseResponse(ResponseStatus.ERROR, gson.toJsonTree(exception));
+            }
+            return gson.toJson(response);
+        });
+
+        Spark.put("/api/financerequests/:requestId/withdraw", (req, res) -> {
+            res.type("application/json");
+            String requestId = req.params(":requestId");
+
+            BaseResponse response;
+            try {
+                service.withdrawFinanceRequest(requestId);
+                response = new BaseResponse(ResponseStatus.SUCCESS);
             } catch (FabricProxyException exception) {
                 exception.printStackTrace();
                 response = new BaseResponse(ResponseStatus.ERROR, gson.toJsonTree(exception));

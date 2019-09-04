@@ -19,4 +19,6 @@ public interface FinanceRequestService {
     public FinanceRequestGroup createFinanceRequest(JSONObject financeRequest) throws Exception;
 
     public void acceptFinanceRequest(String id) throws Exception;
+
+    public void withdrawFinanceRequest(String id) throws Exception;
 }

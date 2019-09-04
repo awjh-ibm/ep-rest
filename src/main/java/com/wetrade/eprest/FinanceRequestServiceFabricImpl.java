@@ -28,11 +28,6 @@ public class FinanceRequestServiceFabricImpl implements FinanceRequestService {
     }
 
     @Override
-    public void acceptFinanceRequest(String id) throws Exception {
-        this.proxy.submitTransaction("admin", subContractName, "acceptFinanceRequest");
-    }
-
-    @Override
     public FinanceRequestGroup createFinanceRequest(JSONObject financeRequest) throws FabricProxyException {
         String requesterId = financeRequest.getString("requesterId");
         String financierIds = financeRequest.getJSONArray("financierIds").toString();
@@ -76,5 +71,17 @@ public class FinanceRequestServiceFabricImpl implements FinanceRequestService {
         String response = this.proxy.evaluateTransaction(identity, subContractName, fcn, new String[]{hash});
         FinanceRequest[] requests = gson.fromJson(response, FinanceRequest[].class);
         return Arrays.asList(requests);
+    }
+
+    @Override
+    public void acceptFinanceRequest(String id) throws Exception {
+        String fcn = "acceptFinanceRequest";
+        this.proxy.submitTransaction(this.identity, subContractName, fcn, id);
+    }
+
+    @Override
+    public void withdrawFinanceRequest(String id) throws FabricProxyException {
+        String fcn = "withdrawFinanceRequest";
+        this.proxy.submitTransaction(identity, subContractName, fcn, id);
     }
 }
