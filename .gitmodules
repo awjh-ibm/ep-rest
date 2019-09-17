@@ -1,9 +1,9 @@
 [submodule "modules/common"]
 	path = modules/common
-	url = git@github.ibm.com:/WeTradePOC/common
+	url = git@github.com:awjh-ibm/WeTradePoC-common.git
 [submodule "modules/assets"]
 	path = modules/assets
-	url = git@github.ibm.com:/WeTradePOC/assets
+	url = git@github.com:awjh-ibm/WeTradePoC-assets.git
 [submodule "modules/ledger-api"]
 	path = modules/ledger-api
-	url = git@github.ibm.com:/WeTradePOC/ledger-api
+	url = git@github.com:awjh-ibm/WeTradePoC-ledger-api.git
